@@ -5,13 +5,9 @@ pip install -r requirements.txt
 
 # Usage
 `
-streamlit run app.py
+streamlit run main.py
 `
 
 # Features
 - Load dataset
 - Generate association rules
-- Visualize results
-
-# License
-This project is licensed under the MIT License.
