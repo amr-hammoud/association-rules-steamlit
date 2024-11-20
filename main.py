@@ -30,9 +30,12 @@ if chosen_tab == "tab1":
 
 # Tab 2: Generate Transactions
 elif chosen_tab == "tab2":
-    products_list = st.text_area("Enter products here (comma separated)", height=40)
-    num_transactions = st.number_input("Number of transactions", min_value=1, value=100)
-    max_number_items = st.number_input("Maximum number of items per transaction", min_value=1, value=5)
+    products_list = st.text_area("Enter products here (comma separated)", height=70)
+    col1, col2 = st.columns(2)
+    with col1:
+        num_transactions = st.number_input("Number of transactions", min_value=1, value=100)
+    with col2:
+        max_number_items = st.number_input("Maximum number of items per transaction", min_value=1, value=5)
     if st.button("Generate Transactions", key="generate_transactions_button"):
         transactions = getData(products_list, num_transactions, max_number_items)
         if transactions:
@@ -58,8 +61,11 @@ if len(st.session_state["transactions"]) > 0:
     st.table(df_sample) 
     
     st.write("### Set Parameters for Association Rule Mining")
-    min_support = st.number_input("Minimum Support (as a percentage)", min_value=0.0, max_value=100.0, value=10.0)
-    min_confidence = st.number_input("Minimum Confidence (as a percentage)", min_value=0.0, max_value=100.0, value=10.0)
+    col1, col2 = st.columns(2)
+    with col1:
+        min_support = st.number_input("Minimum Support (as a percentage)", min_value=0.0, max_value=100.0, value=10.0)
+    with col2:
+        min_confidence = st.number_input("Minimum Confidence (as a percentage)", min_value=0.0, max_value=100.0, value=10.0)
     max_k = st.number_input("Maximum size of itemsets (k)", min_value=2, value=5)
 
 
