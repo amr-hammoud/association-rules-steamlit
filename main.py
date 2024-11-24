@@ -3,6 +3,12 @@ import extra_streamlit_components as stx
 import pandas as pd
 from data import *
 from utils import *
+    
+def resetTransactions():
+    st.session_state["transactions"] = []
+    
+def resetProceed():
+    st.session_state["proceed_clicked"] = False
 
 st.title("Association Rules")
 
@@ -14,8 +20,15 @@ chosen_tab = stx.tab_bar(data=[
     stx.TabBarItemData(id="tab2", title="Generate Transactions", description=""),
 ], default="tab1")
 
+
+if "chosen_tab" not in st.session_state or chosen_tab != st.session_state["chosen_tab"]:
+    resetTransactions()
+    
+st.session_state["chosen_tab"] = chosen_tab
+
 # Tab 1: Upload Transactions
 if chosen_tab == "tab1":
+    
     uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"], help="Column 1 should contain the transaction id and column 2 should contain the products comma-separated")
     if st.button("Read File", key="read_file_button"):
         if uploaded_file:
@@ -39,14 +52,15 @@ elif chosen_tab == "tab2":
     else:
         col1, col2, col3 = st.columns(3)
         with col1:
-            num_transactions = st.number_input("Number of transactions", min_value=1, value=100)
+            num_transactions = st.number_input("Number of transactions", min_value=1, value=100, on_change=resetTransactions)
         with col2:
             value = min(1, num_items)
             min_number_items = st.number_input(
                 "Min items per transaction",
                 min_value=1,
                 max_value=num_items,
-                value=value
+                value=value,
+                on_change=resetTransactions
             )
         with col3:
             value = min(5, num_items)
@@ -54,7 +68,8 @@ elif chosen_tab == "tab2":
                 "Max items per transaction",
                 min_value=1,
                 max_value=num_items,
-                value=value
+                value=value,
+                on_change=resetTransactions
             )
         if st.button("Generate Transactions", key="generate_transactions_button", use_container_width=True):
             transactions = getData(products_list, num_transactions, min_number_items, max_number_items)
@@ -64,7 +79,6 @@ elif chosen_tab == "tab2":
                 st.divider()
             else:
                 st.error("Failed to generate transactions.")
-
 
 # Display loaded transactions if any
 if len(st.session_state["transactions"]) > 0:
@@ -85,13 +99,13 @@ if len(st.session_state["transactions"]) > 0:
     st.write("### Set Parameters for Association Rule Mining")
     col1, col2 = st.columns(2)
     with col1:
-        min_support = st.number_input("Minimum Support", min_value=0.0, max_value=1.0, value=0.1, key="min_support")
+        min_support = st.number_input("Minimum Support", min_value=0.0, max_value=1.0, value=0.1, key="min_support", on_change=resetProceed)
     with col2:
-        min_confidence = st.number_input("Minimum Confidence", min_value=0.0, max_value=1.0, value=0.1, key="min_confidence")
+        min_confidence = st.number_input("Minimum Confidence", min_value=0.0, max_value=1.0, value=0.1, key="min_confidence", on_change=resetProceed)
         
     max_possible_k = len(items)
     value = min(5, max_possible_k)
-    max_k = st.number_input("Maximum size of itemsets (k)", min_value=2, max_value= max_possible_k,value=value, key="max_k")
+    max_k = st.number_input("Maximum size of itemsets (k)", min_value=2, max_value= max_possible_k,value=value, key="max_k", on_change=resetProceed)
 
 
     if st.button("Proceed", key="proceed_button", use_container_width=True):
@@ -118,8 +132,6 @@ if len(st.session_state["transactions"]) > 0:
                 st.success(f"Generated {num_rules} Association Rules")
                 options = generate_pagination_options(num_rules)
                 num_to_show = st.selectbox("Select number of rules to show per page", options, key="num_to_show")
-                
-                # num_to_show = st.number_input("Number of rules to show", min_value=1, max_value= num_rules, value=value, key="num_to_show")
                 
                 if num_to_show:
                     rules_df = pd.DataFrame([
