@@ -2,15 +2,18 @@ import random
 import pandas as pd
 import streamlit as st
 
-def getData(items_csv, num_transactions, max_num_items):
+def csvToArray(csv):
+    return [item.strip() for item in csv.split(",") if item.strip()]
+
+def getData(items_csv, num_transactions, min_number_items, max_num_items):
     if not items_csv.strip():
         return []
 
-    items = [item.strip() for item in items_csv.split(",") if item.strip()]
+    items = csvToArray(items_csv)
     transactions = []
     progress_bar = st.progress(0)
     for i in range(num_transactions):
-        transaction = set(random.sample(items, random.randint(1, max_num_items)))
+        transaction = set(random.sample(items, random.randint(min_number_items, max_num_items)))
         transactions.append(transaction)
         progress = (i + 1) / num_transactions
         progress_bar.progress(progress)
@@ -27,9 +30,16 @@ def readFile(uploaded_file):
             progress_bar = st.progress(0)
             bytes_read = 0
 
-            for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
+            # Read the CSV without headers
+            for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size, header="infer"):
                 for _, row in chunk.iterrows():
-                    transaction = set(row.dropna().values[1:])
+                    if len(row) < 2:
+                        continue  
+                    products_string = row.iloc[1]
+                    if pd.isnull(products_string):
+                        continue
+                    products = csvToArray(products_string)
+                    transaction = set(products)
                     transactions.append(transaction)
                 bytes_read += chunk.memory_usage(deep=True).sum()
                 progress = min(bytes_read / total_size, 1.0)
