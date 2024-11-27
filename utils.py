@@ -1,5 +1,11 @@
 import streamlit as st
 
+def resetTransactions():
+    st.session_state["transactions"] = []
+    
+def resetProceed():
+    st.session_state["proceed_clicked"] = False
+
 def calculate_support(itemset, transactions):
     itemset = set(itemset)
     count = sum(1 for transaction in transactions if itemset.issubset(transaction))
@@ -22,7 +28,9 @@ def generate_candidates(frequent_itemsets, num_items_per_set):
     return candidates
 
 
-def get_frequent_itemsets(items, transactions, min_support, max_k):
+def get_frequent_itemsets(items, transactions):
+    min_support = st.session_state["min_support"]
+    max_k = st.session_state["max_k"]
     progress_bar = st.progress(0)
 
     # Generate Frequent 1-itemsets
@@ -56,10 +64,18 @@ def get_frequent_itemsets(items, transactions, min_support, max_k):
         current_frequent_itemsets = generate_candidates(current_frequent_itemsets, k)
     
     progress_bar.empty()
+    if len(frequent_itemsets) == 0:
+            st.warning("No frequent itemsets found with the given minimum support.")
+            st.stop()
+        
+    st.session_state["frequent_itemsets"] = frequent_itemsets
+    st.success(f"Found {len(frequent_itemsets)} Frequent Itemsets")
     return frequent_itemsets
 
 
-def generate_rules(frequent_itemsets, transactions, min_confidence, progress_bar=None):
+def generate_rules(frequent_itemsets, transactions):
+    min_confidence = st.session_state["min_confidence"]
+    progress_bar = st.progress(0)
     rules = []
     support_cache = {}
 
@@ -99,8 +115,9 @@ def generate_rules(frequent_itemsets, transactions, min_confidence, progress_bar
                 conviction = (1 - support_consequent) / (1 - confidence) if confidence < 1 else None
                 rules.append((antecedent, consequent, confidence, lift, conviction))
         processed_itemsets += 1
-        if progress_bar:
-            progress_bar.progress(processed_itemsets / total_itemsets)
+        progress_bar.progress(processed_itemsets / total_itemsets)
+    progress_bar.empty()
+    st.session_state["rules"] = rules
     return rules
 
 
