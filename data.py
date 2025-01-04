@@ -13,7 +13,8 @@ def getData(items_csv, num_transactions, min_number_items, max_num_items):
     transactions = []
     progress_bar = st.progress(0)
     for i in range(num_transactions):
-        transaction = set(random.sample(items, random.randint(min_number_items, max_num_items)))
+        random_num_items = random.randint(min_number_items, max_num_items)
+        transaction = set(random.sample(items, random_num_items))
         transactions.append(transaction)
         progress = (i + 1) / num_transactions
         progress_bar.progress(progress)

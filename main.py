@@ -12,17 +12,17 @@ if len(st.session_state["transactions"]) > 0:
     items = set().union(*transactions)
 
     render_transaction_table(transactions)
-    
+
     st.divider()
-    
+
     render_rules_params(items)
-    
+
     if st.button("Proceed", key="proceed_button", use_container_width=True):
         st.session_state["proceed_clicked"] = True
-        
-        frequent_itemsets = get_frequent_itemsets(items, transactions)
-        
-        rules = generate_rules(frequent_itemsets, transactions)
-        
-    if st.session_state.get("proceed_clicked", False):  
+
+        get_frequent_itemsets(items, transactions)
+
+        generate_rules(transactions)
+
+    if st.session_state.get("proceed_clicked", False):
         render_rules_table()
